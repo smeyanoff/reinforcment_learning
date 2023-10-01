@@ -1,0 +1,7 @@
+hw1:
+  cross_entropy:
+    task_name: cross_entropy
+    params:
+      q_param: 0.9
+      n_iterations: 20
+      n_trajectories: 500

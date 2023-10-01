@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "reinforcment-larning"
+version = "0.1.0"
+description = ""
+authors = ["Dmitry Nesmeyanov <miradg99@gmail.com>"]
+readme = "README.md"
+packages = [{include = "reinforcment_larning"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+gym = {extras = ["toy-text"], version = "^0.26.2"}
+clearml = "^1.13.1"
+pyyaml = "^6.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
