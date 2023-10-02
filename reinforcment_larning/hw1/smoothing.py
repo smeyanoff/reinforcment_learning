@@ -119,7 +119,7 @@ if __name__=="__main__":
     for iteration in range(iteration_n):
         trajectories = [env_class.get_trajectory(actor) for _ in range(trajectory_n)]
         #policy evaluation
-        total_rewards = [np.sum(trajectory['reward']) for trajectory in trajectories]
+        total_rewards = [np.mean(trajectory['reward']) for trajectory in trajectories]
         logger.report_scalar(title='mean total reward', 
                              series='mtr', 
                              value=np.mean(total_rewards),
