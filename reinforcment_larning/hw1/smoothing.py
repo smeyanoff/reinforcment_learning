@@ -5,7 +5,7 @@ import yaml
 
 with open("config.yaml", "r") as conf:
     config = yaml.safe_load(conf)
-config = config["hw1"]["cross_entropy"]
+config = config["hw1"]["smoothing"]
 
 
 class Envitonment:
@@ -50,7 +50,7 @@ class CrossEntropyActor:
 
         p = [x / np.sum(probabilities) for x in probabilities]
         action = np.random.choice(list(range(self.__action_space)), 
-                                p=p)
+                                  p=p)
         return action
     
     def make_step(self, state: int, available_steps:int):
@@ -62,18 +62,36 @@ class CrossEntropyActor:
 
         return step
 
-    def fit(self, elite_trajectories: list[dict]):
+    def fit(self, elite_trajectories: list[dict], smoothing="none", l=1):
+        assert smoothing in ["none", "policy", "laplace"]
+        if smoothing == "laplace":
+            assert l > 0
+        if smoothing == "policy":
+            assert l > 0 and l <= 1
         new_model = np.zeros((self.__observation_space, self.__action_space))
 
         for trajectory in elite_trajectories:
             for state, action in zip(trajectory['states'], trajectory['actions']):
                 new_model[state][action] += 1
 
-        for state in range(self.__observation_space):
-            if np.sum(new_model[state]) > 0:
-                new_model[state] /= np.sum(new_model[state])
-            else:
-                new_model[state] = self.model[state].copy()
+
+        if smoothing == "none":
+            for state in range(self.__observation_space):
+                if np.sum(new_model[state]) > 0:
+                    new_model[state] /= np.sum(new_model[state])
+                else:
+                    new_model[state] = self.model[state].copy()
+        if smoothing == "laplace":
+            for state in range(self.__observation_space):
+                new_model[state] = ((new_model[state] + l) / 
+                                    (np.sum(new_model[state])+self.__action_space*l))
+        if smoothing == "policy":
+            for state in range(self.__observation_space):
+                if np.sum(new_model[state]) > 0:
+                    new_model[state] /= np.sum(new_model[state])
+                else:
+                    new_model[state] = self.model[state].copy()
+                new_model[state] = (new_model[state]*l + (1-l)*self.model[state])
 
         self.model = new_model
         return None
@@ -87,15 +105,18 @@ if __name__=="__main__":
     env_class = Envitonment()
     actor = CrossEntropyActor()
 
-    task_name = config["task_name"]+ "_".join([str(x) for x in config["params"].values()])
+    task_name = (
+        config["task_name"] 
+        + "_".join([str(x) for x in config["params"].values()])
+        + "_".join([str(x) for x in config["fit_params"].values()])
+    )
     task = Task.init(project_name='RLearning', 
                      task_name=task_name)
-    task.connect(config["params"])
+    task.connect(config)
 
     logger = task.get_logger()
 
     for iteration in range(iteration_n):
-        print("iteration:", iteration)
         trajectories = [env_class.get_trajectory(actor) for _ in range(trajectory_n)]
         #policy evaluation
         total_rewards = [np.sum(trajectory['reward']) for trajectory in trajectories]
@@ -112,4 +133,6 @@ if __name__=="__main__":
             if total_reward > quantile:
                 elite_trajectories.append(trajectory)
         
-        actor.fit(elite_trajectories)
+        actor.fit(elite_trajectories, 
+                  config["fit_params"]["smoothing_type"],
+                  config["fit_params"]["lambda_param"])

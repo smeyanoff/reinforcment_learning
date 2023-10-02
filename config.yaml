@@ -4,4 +4,13 @@ hw1:
     params:
       q_param: 0.9
       n_iterations: 20
-      n_trajectories: 500
+      n_trajectories: 200
+  smoothing:
+    task_name: smoothing
+    params:
+      q_param: 0.95
+      n_iterations: 100
+      n_trajectories: 200
+    fit_params:
+      smoothing_type: laplace
+      lambda_param: 0.1
