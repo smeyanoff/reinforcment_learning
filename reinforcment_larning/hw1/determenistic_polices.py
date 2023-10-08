@@ -1,3 +1,5 @@
+import itertools
+
 import gym
 import numpy as np
 import yaml
@@ -12,31 +14,37 @@ class Envitonment:
     def __init__(self):
         self.env = gym.make('Taxi-v3')
 
-    def get_trajectory(self, agent, max_steps=1000):
+    def get_trajectory(self):
         obs = self.env.reset()
-        trajectory = {'states': [], 'actions': [], 'reward': []}
+
         done = False
         state = obs[0]
         available_steps = obs[1]
 
-        for _ in range(max_steps):
+        set_polices = list(set(itertools.permutations([0, 0, 0, 0, 0, 1])))
+        probabilities = np.ones((500, 6)) * [0, 0, 0, 0, 0, 1]
 
-            if done:
-                break
+        trajectories = []
+        for policy in set_polices:
+            for action in range(len(probabilities)):
+                probabilities_copy = probabilities.copy()
+                probabilities_copy[action] = policy
+                trajectory = {'states': [], 'actions': [], 'reward': []}
+                for _ in range(1000):
+                    if done:
+                        break
+                    next_step = list(probabilities[state]).index(1)
 
-            next_step = agent.make_step(
-                state,
-                available_steps['action_mask'],
-            )
-            trajectory['actions'].append(next_step)
+                    trajectory['actions'].append(next_step)
 
-            obs = self.env.step(next_step)
-            state, reward, done, _, available_steps = obs
+                    obs = self.env.step(next_step)
+                    state, reward, done, _, available_steps = obs
 
-            trajectory['reward'].append(reward)
-            trajectory['states'].append(state)
+                    trajectory['reward'].append(reward)
+                    trajectory['states'].append(state)
+                trajectories.append(trajectory)
 
-        return trajectory
+        return trajectories
 
 
 class CrossEntropyActor:
@@ -129,11 +137,8 @@ if __name__ == "__main__":
 
     for iteration in range(iteration_n):
         print("iteration:", iteration)
-        trajectories = [
-            env_class.get_trajectory(
-                actor,
-            ) for _ in range(trajectory_n)
-        ]
+
+        trajectories = env_class.get_trajectory()
         # policy evaluation
         total_rewards = [
             np.sum(trajectory['reward'])

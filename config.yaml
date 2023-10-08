@@ -2,15 +2,16 @@ hw1:
   cross_entropy:
     task_name: cross_entropy
     params:
-      q_param: 0.7
+      q_param: 0.9
       n_iterations: 20
-      n_trajectories: 200
+      n_trajectories: 1000
+      log: False
   smoothing:
     task_name: smoothing
     params:
-      q_param: 0.95
-      n_iterations: 30
-      n_trajectories: 500
-    fit_params:
-      smoothing_type: policy
-      lambda_param: 0.8
+      q_param: 0.7
+      n_iterations: 20
+      n_trajectories: 1000
+      log: True
+      smoothing_type: laplace     # laplace, policy
+      lambda_param: 0.7
