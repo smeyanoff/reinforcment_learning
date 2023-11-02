@@ -4,15 +4,21 @@ from torch import nn
 
 
 class CEM(nn.Module):
-    def __init__(self, state_dim, action_n, learning_rate):
+    def __init__(
+        self,
+        state_dim,
+        action_n,
+        learning_rate,
+        hidden_layer_dim,
+    ):
         super().__init__()
         self.state_dim = state_dim
         self.action_n = action_n
 
         self.network = nn.Sequential(
-            nn.Linear(self.state_dim, 100),
+            nn.Linear(self.state_dim, hidden_layer_dim),
             nn.ReLU(),
-            nn.Linear(100, self.action_n),
+            nn.Linear(hidden_layer_dim, self.action_n),
         )
 
         self.softmax = nn.Softmax()
@@ -32,9 +38,11 @@ class CEM(nn.Module):
     def update_policy(self, elite_trajectories):
         elite_states = []
         elite_actions = []
+
         for trajectory in elite_trajectories:
             elite_states.extend(trajectory['states'])
             elite_actions.extend(trajectory['actions'])
+
         elite_states = torch.FloatTensor(elite_states)
         elite_actions = torch.LongTensor(elite_actions)
 

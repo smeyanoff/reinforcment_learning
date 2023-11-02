@@ -4,15 +4,16 @@ import numpy as np
 def get_trajectory(env, agent, trajectory_len, visualize=False):
     trajectory = {'states': [], 'actions': [], 'total_reward': 0}
 
-    state = env.reset()
-    trajectory['states'].append(state)
+    state = env.reset()[0]
 
     for _ in range(trajectory_len):
+
+        trajectory['states'].append(state)
 
         action = agent.get_action(state)
         trajectory['actions'].append(action)
 
-        state, reward, done, _ = env.step(action)
+        state, reward, done, wtf1, wtf2 = env.step(action)
         trajectory['total_reward'] += reward
 
         if done:
@@ -20,8 +21,6 @@ def get_trajectory(env, agent, trajectory_len, visualize=False):
 
         if visualize:
             env.render()
-
-        trajectory['states'].append(state)
 
     return trajectory
 
