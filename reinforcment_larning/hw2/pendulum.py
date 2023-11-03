@@ -5,35 +5,38 @@ import optuna
 from agent import CEM
 from utils import get_elite_trajectories, get_trajectory
 
-gym_name = "lunar_lander"
+gym_name = "pendulum"
 
-env = gym.make(
-    id="LunarLander-v2",
-    gravity=-10.0,
-    wind_power=15.0,
-    turbulence_power=1.5,
-    continuous=False,
-    enable_wind=False,
-)
+env = gym.make('Pendulum-v1', g=9.81)
 task = clearml.Task.init(
     project_name="RLearning",
-    task_name="HW2_lunar_lender_3",
+    task_name="HW2_pendulum",
 )
 
 
 def objective(trial: optuna.Trial):
 
-    state_dim = 8
-    action_n = 4
+    state_dim = 3
+    action_n = 1
     learning_rate = trial.suggest_float("lr", 1e-3, 1e-1, log=True)
-    hidden_layer_dim = trial.suggest_int("hidden_layer_dim", 50, 200)
+    learning_rate_decay = trial.suggest_float("lr", 1e-5, 1e-1, log=True)
+    weight_decay = trial.suggest_float("lr", 1e-5, 1e-1, log=True)
+    hidden_layer_dim = trial.suggest_int("hidden_layer_dim", 10, 50)
 
-    episode_n = trial.suggest_int("n_episodes", 10, 100)
-    trajectory_n = trial.suggest_int("n_trajectories", 50, 200)
+    episode_n = trial.suggest_int("n_episodes", 100, 1000)
+    trajectory_n = trial.suggest_int("n_trajectories", 50, 300)
     trajectory_len = trial.suggest_int("len_trajectories", 500, 2000)
-    q_param = trial.suggest_float("q_param", 0.8, 0.99)
+    q_param = trial.suggest_float("q_param", 0.7, 0.99)
 
-    agent = CEM(state_dim, action_n, learning_rate, hidden_layer_dim, gym_name)
+    agent = CEM(
+        state_dim,
+        action_n,
+        learning_rate,
+        learning_rate_decay,
+        weight_decay,
+        hidden_layer_dim,
+        gym_name,
+    )
 
     logger = task.get_logger()
 
@@ -47,6 +50,8 @@ def objective(trial: optuna.Trial):
             trajectory['total_reward']
             for trajectory in trajectories
         ])
+
+        # logger.report_text(trajectories[0]["actions"])
 
         elite_trajectories = get_elite_trajectories(trajectories, q_param)
 

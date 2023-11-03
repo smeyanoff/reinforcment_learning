@@ -10,3 +10,6 @@ determenistic_polices:
 
 hw2_lunar_lender:
 	poetry run python reinforcment_larning/hw2/lunar_lender.py
+
+hw2_pendulum:
+	poetry run python reinforcment_larning/hw2/pendulum.py
