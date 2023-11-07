@@ -1,7 +1,7 @@
 # most of this code was politely stolen from https://github.com/berkeleydeeprlcourse/homework/
 # all credit goes to https://github.com/abhishekunique
 # (if I got the author right)
-# import numpy as np
+import numpy as np
 from gym.utils import seeding
 
 try:

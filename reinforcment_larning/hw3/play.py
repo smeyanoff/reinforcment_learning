@@ -10,6 +10,7 @@ if __name__ == "__main__":
     def objective(trial: optuna.Trial):
         iter_n = 100
         eval_iter_n = 100
+        warmstart = True
         gamma = trial.suggest_float("gamma", 0.6, 1)
 
         env = FrozenLakeEnv()
@@ -17,6 +18,7 @@ if __name__ == "__main__":
             gamma=gamma,
             env=env,
             eval_iter_n=eval_iter_n,
+            warmstart=warmstart
         )
 
         agent.fit(iter_n)
@@ -43,7 +45,7 @@ if __name__ == "__main__":
     def callback(
         gamma_list: list,
         rewards_list: list,
-        study: optuna.study.Study,
+        _study: optuna.study.Study,
         trial: optuna.trial.FrozenTrial,
     ):
 
@@ -56,13 +58,13 @@ if __name__ == "__main__":
     study = optuna.create_study(directions=["maximize"])
     study.optimize(
         objective,
-        n_trials=100,
+        n_trials=2,
         callbacks=[lambda x, y: callback(gamma_list, rewards_list, x, y)],
     )
 
     task = clearml.Task.init(
         project_name="RLearning",
-        task_name="HW3_play_1",
+        task_name="HW3_play_2",
     )
 
     logger = clearml.Logger.current_logger()

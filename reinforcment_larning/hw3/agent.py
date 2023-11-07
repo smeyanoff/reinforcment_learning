@@ -1,3 +1,4 @@
+import copy
 
 
 class Agent:
@@ -7,10 +8,12 @@ class Agent:
         gamma,
         env,
         eval_iter_n,
+        warmstart=False
     ):
         self.eval_iter_n = eval_iter_n
         self.gamma = gamma
         self.env = env
+        self.warmstart = warmstart
 
         self.v_values = self.init_v_values()
         self.policy = self.init_policy()
@@ -23,6 +26,11 @@ class Agent:
             for action in self.env.get_possible_actions(state):
                 q_values[state][action] = 0
                 for next_state in self.env.get_next_states(state, action):
+                    if self.env.is_terminal(next_state):
+                        next_value = 0
+                    else:
+                        next_value = self.v_values[next_state]
+
                     q_values[state][action] += (
                         self.env.get_transition_prob(state, action, next_state)
                         * self.env.get_reward(state, action, next_state)
@@ -30,7 +38,7 @@ class Agent:
                     q_values[state][action] += (
                         self.gamma
                         * self.env.get_transition_prob(state, action, next_state)
-                        * self.v_values[next_state]
+                        * next_value
                     )
         return q_values
 
@@ -50,7 +58,10 @@ class Agent:
         return v_values
 
     def policy_evaluation_step(self):
-        new_v_values = self.init_v_values()
+        if self.warmstart:
+            new_v_values = copy.deepcopy(self.v_values)
+        else:
+            new_v_values = self.init_v_values()
         for state in self.env.get_all_states():
             for action in self.env.get_possible_actions(state):
                 new_v_values[state] += (
