@@ -1,24 +1,25 @@
 import clearml
 import optuna
-from agent import Agent
+from agent_value_iteration import Agent
 from Frozen_Lake import FrozenLakeEnv
 from numpy import column_stack, mean
 from numpy.random import choice
 
 if __name__ == "__main__":
 
+    logging = True
+
     def objective(trial: optuna.Trial):
-        iter_n = 100
-        eval_iter_n = 100
-        warmstart = True
-        gamma = trial.suggest_float("gamma", 0.6, 1)
+        iter_n = trial.suggest_int("n_iterations", 500, 2000)
+
+        gamma = trial.suggest_float("gamma", 0.8, 1)
+        epsilon = trial.suggest_float("epsilon", 1e-5, 5e-2)
 
         env = FrozenLakeEnv()
         agent = Agent(
             gamma=gamma,
             env=env,
-            eval_iter_n=eval_iter_n,
-            warmstart=warmstart
+            epsilon=epsilon,
         )
 
         agent.fit(iter_n)
@@ -58,25 +59,27 @@ if __name__ == "__main__":
     study = optuna.create_study(directions=["maximize"])
     study.optimize(
         objective,
-        n_trials=2,
+        n_trials=100,
         callbacks=[lambda x, y: callback(gamma_list, rewards_list, x, y)],
     )
 
-    task = clearml.Task.init(
-        project_name="RLearning",
-        task_name="HW3_play_2",
-    )
+    if logging:
 
-    logger = clearml.Logger.current_logger()
+        task = clearml.Task.init(
+            project_name="RLearning",
+            task_name="HW3_ex_3_val_iter",
+        )
 
-    plot_data = column_stack((rewards_list, gamma_list))
+        logger = clearml.Logger.current_logger()
 
-    logger.report_scatter2d(
-        title="actor_from_gamma",
-        series="reward_from_gamma",
-        mode="markers",
-        iteration=0,
-        scatter=plot_data,
-        xaxis="gamma",
-        yaxis="reward",
-    )
+        plot_data = column_stack((rewards_list, gamma_list))
+
+        logger.report_scatter2d(
+            title="actor_from_gamma",
+            series="reward_from_gamma",
+            mode="markers",
+            iteration=0,
+            scatter=plot_data,
+            xaxis="gamma",
+            yaxis="reward",
+        )

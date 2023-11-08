@@ -1,5 +1,7 @@
 import copy
 
+import numpy as np
+
 
 class Agent:
 
@@ -40,6 +42,7 @@ class Agent:
                         * self.env.get_transition_prob(state, action, next_state)
                         * next_value
                     )
+
         return q_values
 
     def init_policy(self):
@@ -68,6 +71,7 @@ class Agent:
                     self.policy[state][action]
                     * self.q_values[state][action]
                 )
+
         self.v_values = new_v_values
 
         return None

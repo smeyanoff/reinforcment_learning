@@ -13,3 +13,9 @@ hw2_lunar_lender:
 
 hw2_pendulum:
 	poetry run python reinforcment_larning/hw2/pendulum.py
+
+hw3_ex_1_2:
+	poetry run python reinforcment_larning/hw3/play_ex_1_2.py
+
+hw3_ex_3:
+	poetry run python reinforcment_larning/hw3/play_ex_3.py
