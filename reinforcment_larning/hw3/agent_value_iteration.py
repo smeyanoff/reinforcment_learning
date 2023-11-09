@@ -9,11 +9,14 @@ class Agent:
         self,
         gamma,
         env,
-        epsilon
+        epsilon,
+        early_stop
     ):
+        self.count_trigger_env = 0
         self.gamma = gamma
         self.env = env
         self.epsilon = epsilon
+        self.early_stop = early_stop
 
         self.v_values = self.init_v_values()
         self.policy = self.init_policy()
@@ -23,6 +26,9 @@ class Agent:
         for state in self.env.get_all_states():
             policy[state] = {}
             for action in self.env.get_possible_actions(state):
+
+                self.count_trigger_env += 1
+
                 policy[state][action] = 1 / \
                     len(self.env.get_possible_actions(state))
         return policy
@@ -30,6 +36,9 @@ class Agent:
     def init_v_values(self):
         v_values = {}
         for state in self.env.get_all_states():
+
+            self.count_trigger_env += 1
+
             v_values[state] = 0
         return v_values
 
@@ -37,6 +46,9 @@ class Agent:
 
         value = 0
         for next_state in self.env.get_next_states(state, action):
+
+            self.count_trigger_env += 1
+
             value += self.env.get_reward(state, action, next_state)
             value += (
                 self.gamma
@@ -65,6 +77,9 @@ class Agent:
             for action in self.env.get_possible_actions(state):
                 q_values[state][action] = 0
                 for next_state in self.env.get_next_states(state, action):
+
+                    self.count_trigger_env += 1
+
                     if self.env.is_terminal(next_state):
                         next_value = 0
                     else:
@@ -88,6 +103,9 @@ class Agent:
             argmax_action = None
             max_q_value = float('-inf')
             for action in self.env.get_possible_actions(state):
+
+                self.count_trigger_env += 1
+
                 policy[state][action] = 0
                 if self.q_values[state][action] > max_q_value:
                     argmax_action = action
@@ -101,7 +119,8 @@ class Agent:
     def fit(self, iter_n):
         for _ in range(iter_n):
             new_v_values = self.value_iteration()
-            if np.max(
+
+            if self.early_stop and np.max(
                 np.abs(
                     np.subtract(
                         list(new_v_values.values()),

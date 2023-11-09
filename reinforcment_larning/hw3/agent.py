@@ -12,12 +12,15 @@ class Agent:
         eval_iter_n,
         warmstart=False
     ):
+        self.count_trigger_env = 0
         self.eval_iter_n = eval_iter_n
         self.gamma = gamma
         self.env = env
         self.warmstart = warmstart
 
         self.v_values = self.init_v_values()
+        if self.warmstart:
+            self.past_v_values = self.v_values
         self.policy = self.init_policy()
         self.q_values = self.get_q_values()
 
@@ -28,10 +31,18 @@ class Agent:
             for action in self.env.get_possible_actions(state):
                 q_values[state][action] = 0
                 for next_state in self.env.get_next_states(state, action):
+
+                    self.count_trigger_env += 1
+
+                    if self.warmstart:
+                        v_values = self.past_v_values
+                    else:
+                        v_values = self.v_values
+
                     if self.env.is_terminal(next_state):
                         next_value = 0
                     else:
-                        next_value = self.v_values[next_state]
+                        next_value = v_values[next_state]
 
                     q_values[state][action] += (
                         self.env.get_transition_prob(state, action, next_state)
@@ -50,6 +61,9 @@ class Agent:
         for state in self.env.get_all_states():
             policy[state] = {}
             for action in self.env.get_possible_actions(state):
+
+                self.count_trigger_env += 1
+
                 policy[state][action] = 1 / \
                     len(self.env.get_possible_actions(state))
         return policy
@@ -57,16 +71,24 @@ class Agent:
     def init_v_values(self):
         v_values = {}
         for state in self.env.get_all_states():
+
+            self.count_trigger_env += 1
+
             v_values[state] = 0
         return v_values
 
     def policy_evaluation_step(self):
         if self.warmstart:
-            new_v_values = copy.deepcopy(self.v_values)
+            new_v_values, self.past_v_values = (
+                self.init_v_values(), copy.deepcopy(self.v_values)
+            )
         else:
             new_v_values = self.init_v_values()
         for state in self.env.get_all_states():
             for action in self.env.get_possible_actions(state):
+
+                self.count_trigger_env += 1
+
                 new_v_values[state] += (
                     self.policy[state][action]
                     * self.q_values[state][action]
@@ -90,6 +112,9 @@ class Agent:
             argmax_action = None
             max_q_value = float('-inf')
             for action in self.env.get_possible_actions(state):
+
+                self.count_trigger_env += 1
+
                 policy[state][action] = 0
                 if self.q_values[state][action] > max_q_value:
                     argmax_action = action

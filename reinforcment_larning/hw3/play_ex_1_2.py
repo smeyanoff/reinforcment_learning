@@ -7,13 +7,13 @@ from numpy.random import choice
 
 if __name__ == "__main__":
 
-    logging = False
+    logging = True
 
     def objective(trial: optuna.Trial):
-        iter_n = 2
-        eval_iter_n = 2
-        warmstart = True
-        gamma = trial.suggest_float("gamma", 0.01, 0.1)
+        iter_n = 100
+        eval_iter_n = 100
+        warmstart = False
+        gamma = trial.suggest_float("gamma", 0.6, 1)
 
         env = FrozenLakeEnv()
         agent = Agent(
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     study = optuna.create_study(directions=["maximize"])
     study.optimize(
         objective,
-        n_trials=2,
+        n_trials=60,
         callbacks=[lambda x, y: callback(gamma_list, rewards_list, x, y)],
     )
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
         task = clearml.Task.init(
             project_name="RLearning",
-            task_name="HW3_play_2",
+            task_name="HW3_play_1_2",
         )
 
         logger = clearml.Logger.current_logger()

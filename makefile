@@ -19,3 +19,6 @@ hw3_ex_1_2:
 
 hw3_ex_3:
 	poetry run python reinforcment_larning/hw3/play_ex_3.py
+
+hw3_agents_compare:
+	poetry run python reinforcment_larning/hw3/agents_compare.py

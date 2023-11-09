@@ -20,6 +20,7 @@ if __name__ == "__main__":
             gamma=gamma,
             env=env,
             epsilon=epsilon,
+            early_stop=True
         )
 
         agent.fit(iter_n)
@@ -59,7 +60,7 @@ if __name__ == "__main__":
     study = optuna.create_study(directions=["maximize"])
     study.optimize(
         objective,
-        n_trials=100,
+        n_trials=200,
         callbacks=[lambda x, y: callback(gamma_list, rewards_list, x, y)],
     )
 
