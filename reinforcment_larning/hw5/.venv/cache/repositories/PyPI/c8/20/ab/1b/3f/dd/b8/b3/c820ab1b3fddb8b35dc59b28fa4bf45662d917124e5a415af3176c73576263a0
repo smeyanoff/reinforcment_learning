@@ -1,1 +1,0 @@
-9999999999{"name": "lit", "version": "17.0.4", "summary": "A Software Testing Tool", "requires_dist": null, "requires_python": null, "files": [{"file": "lit-17.0.4.tar.gz", "hash": "sha256:ee2e180128e770abc6aed3a02de2daf09d81b7d30225e315205d3599c311d304"}], "yanked": false, "_cache_version": "2.0.0"}
