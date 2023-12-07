@@ -58,5 +58,5 @@ class DQN:
             self.optimzaer.step()
             self.optimzaer.zero_grad()
 
-            if self.epsilon > self.epilon_min:
+            if self.epsilon - self.epsilon_decrease > self.epilon_min:
                 self.epsilon -= self.epsilon_decrease
