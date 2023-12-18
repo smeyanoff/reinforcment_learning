@@ -17,25 +17,25 @@ if __name__ == "__main__":
 
     for episode in range(episode_n):
 
-        states, actions, rewards, log_probs = [], [], [], []
+        states, actions, rewards, dones = [], [], [], []
 
         for _ in range(trajectory_n):
             total_reward = 0
 
-            state = env.reset()
-            while not done:
+            state = env.reset()[0]
+            for _ in range(200):
                 states.append(state)
 
-                action, log_prob = agent.get_action(state)
+                action = agent.get_action(state)
                 actions.append(action)
-                log_probs.append(log_prob)
 
-                state, reward, done, _ = env.step(2 * action)
+                state, reward, done, _, _ = env.step(2 * action)
                 rewards.append(reward)
+                dones.append(done)
 
                 total_reward += reward
 
             total_rewards.append(total_reward)
             print(total_reward)
 
-        agent.fit(states, actions, rewards, log_probs)
+        agent.fit(states, actions, rewards, dones)
